@@ -19,27 +19,42 @@ class Player(pygame.sprite.Sprite):
         self.energy = 100
         self.inventory = Inventory()
         # Инициализация инвентаря для игрока
+        def load_and_scale_image(path, size):
+            image = pygame.image.load(path).convert_alpha()
+            return pygame.transform.scale(image, size)
 
-        # Загрузка анимаций
+        frame_size = (64, 64)
+
         self.animations = {
             'idle': {
-                'down': [pygame.image.load('assets/player/idle/Cyborgsolo_idle1.png').convert_alpha()],
-                'up': [pygame.image.load('assets/player/idle/Cyborgsolo_idle2.png').convert_alpha()],
-                'left': [pygame.image.load('assets/player/idle/Cyborgsolo_idle3.png').convert_alpha()],
-                'right': [pygame.image.load('assets/player/idle/Cyborgsolo_idle4.png').convert_alpha()]
+                'down': [load_and_scale_image(f'assets/player/idle/idle_right{i}.png', frame_size) for i in
+                         range(0, 11)],
+                'up': [load_and_scale_image(f'assets/player/idle/idle_left{i}.png', frame_size) for i in range(0, 11)],
+                'left': [load_and_scale_image(f'assets/player/idle/idle_left{i}.png', frame_size) for i in
+                         range(0, 11)],
+                'right': [load_and_scale_image(f'assets/player/idle/idle_right{i}.png', frame_size) for i in
+                          range(0, 11)]
             },
             'walking': {
-                'down': [pygame.image.load(f'assets/player/run/Cyborgsolo_run{i}.png').convert_alpha() for i in
-                         range(1, 7)],
-                'up': [pygame.image.load(f'assets/player/run/Cyborgsolo_run{i}.png').convert_alpha() for i in
-                       range(1, 7)],
-                'left': [pygame.image.load(f'assets/player/run/Cyborgsolo_run{i}.png').convert_alpha() for i in
-                         range(1, 7)],
-                'right': [pygame.image.load(f'assets/player/run/Cyborgsolo_run{i}.png').convert_alpha() for i in
-                          range(1, 7)]
+                'down': [load_and_scale_image(f'assets/player/walk/walk_right{i}.png', frame_size) for i in
+                         range(0, 13)],
+                'up': [load_and_scale_image(f'assets/player/walk/walk_left{i}.png', frame_size) for i in range(0, 13)],
+                'left': [load_and_scale_image(f'assets/player/walk/walk_left{i}.png', frame_size) for i in
+                         range(0, 13)],
+                'right': [load_and_scale_image(f'assets/player/walk/walk_right{i}.png', frame_size) for i in
+                          range(0, 13)]
+            },
+            'attacking': {
+                'down': [load_and_scale_image(f'assets/player/attack/attacking_right{i}.png', frame_size) for i in
+                         range(0, 18)],
+                'up': [load_and_scale_image(f'assets/player/attack/attacking_left{i}.png', frame_size) for i in
+                       range(0, 18)],
+                'left': [load_and_scale_image(f'assets/player/attack/attacking_left{i}.png', frame_size) for i in
+                         range(0, 18)],
+                'right': [load_and_scale_image(f'assets/player/attack/attacking_right{i}.png', frame_size) for i in
+                          range(0, 18)]
             }
         }
-
         # Установка начального изображения как первый элемент списка анимации 'idle' 'down'
         self.image = self.animations['idle']['down'][0]
         self.rect = self.image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
@@ -50,36 +65,69 @@ class Player(pygame.sprite.Sprite):
         # Инициализация здоровья и энергии
         self.health = self.MAX_HEALTH
         self.energy = self.MAX_ENERGY
+        self.attacking = False  # Новое состояние для атаки
 
     def update(self, keys):
         self.walking = False
-        if keys[pygame.K_a]:
-            self.rect.x -= self.speed
-            self.direction = 'left'
-            self.walking = True
-        if keys[pygame.K_d]:
-            self.rect.x += self.speed
-            self.direction = 'right'
-            self.walking = True
-        if keys[pygame.K_w]:
-            self.rect.y -= self.speed
-            self.direction = 'up'
-            self.walking = True
-        if keys[pygame.K_s]:
-            self.rect.y += self.speed
-            self.direction = 'down'
-            self.walking = True
 
-        # Анимация движения
-        animation_type = 'walking' if self.walking else 'idle'
+        # Проверка на атаку
+        if keys[pygame.K_SPACE]:  # Предполагая, что кнопка пробела используется для атаки
+            self.attacking = True
+            self.current_frame = 0
+
+        # Определение типа анимации
+        if self.attacking:
+            animation_type = 'attacking'
+        else:
+            move_x, move_y = 0, 0
+            if keys[pygame.K_a]:
+                self.rect.x -= self.speed
+                self.direction = 'left'
+                self.walking = True
+            if keys[pygame.K_d]:
+                self.rect.x += self.speed
+                self.direction = 'right'
+                self.walking = True
+            if keys[pygame.K_w]:
+                move_y -= self.speed
+                if not keys[pygame.K_a] and not keys[pygame.K_d]:  # Если не двигаемся по горизонтали
+                    self.direction = 'up'
+            if keys[pygame.K_s]:
+                move_y += self.speed
+                if not keys[pygame.K_a] and not keys[pygame.K_d]:  # Если не двигаемся по горизонтали
+                    self.direction = 'down'
+            # Обновляем позицию игрока
+            self.rect.x += move_x
+            self.rect.y += move_y
+            self.walking = move_x != 0 or move_y != 0
+            animation_type = 'walking' if self.walking else 'idle'
+
+        # Получение кадров анимации
         animation_frames = self.animations[animation_type][self.direction]
 
         now = pygame.time.get_ticks()
         if now - self.last_updated > self.frame_rate:
             self.last_updated = now
-            self.current_frame = (self.current_frame + 1) % len(animation_frames)
+            self.current_frame += 1
+
+            # Если текущий кадр достиг конца анимации атаки, остановим атаку
+            if self.attacking and self.current_frame >= len(animation_frames):
+                self.attacking = False
+                self.current_frame = 0  # Сброс кадра анимации на начало
+
+            # Обновляем кадр анимации
+            self.current_frame %= len(animation_frames)
             self.image = animation_frames[self.current_frame]
 
+            # Масштабирование изображения во время атаки
+            if self.attacking:
+                attack_size = (114, 76)  # Установите нужный размер для атаки
+                self.image = pygame.transform.scale(self.image, attack_size)
+                self.rect = self.image.get_rect(center=self.rect.center)
+            else:
+                original_size = (64, 64)  # Установите исходный размер персонажа
+                self.image = pygame.transform.scale(self.image, original_size)
+                self.rect = self.image.get_rect(center=self.rect.center)
     def take_damage(self, amount):
         self.health = max(self.health - amount, 0)  # Предотвращаем отрицательное здоровье
         if self.health == 0:

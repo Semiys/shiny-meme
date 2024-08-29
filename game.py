@@ -12,18 +12,25 @@ class Game:
         self.clock = pygame.time.Clock()
         self.player = Player()
         self.running = True
+        # Загрузка иконок предметов
+        self.health_item_image = pygame.image.load('assets/potion/Healthpotion.png').convert_alpha()
+        self.energy_item_image = pygame.image.load('assets/titles/Tiles.png').convert_alpha()
+
         # Создание предметов для восстановления здоровья
-        self.health_items = [pygame.sprite.Sprite() for _ in range(2)]
-        for i, item in enumerate(self.health_items):
-            item.image = pygame.Surface((30, 30))
-            item.image.fill((0, 0, 255))
+        self.health_items = []
+        for i in range(2):
+            item = pygame.sprite.Sprite()
+            item.image = self.health_item_image
             item.rect = item.image.get_rect(topleft=(i * 300, 300))
-            # Создание предметов для восстановления энергии
-        self.energy_items = [pygame.sprite.Sprite() for _ in range(2)]
-        for i, item in enumerate(self.energy_items):
-            item.image = pygame.Surface((30, 30))
-            item.image.fill((255, 255, 0))
+            self.health_items.append(item)
+
+        # Создание предметов для восстановления энергии
+        self.energy_items = []
+        for i in range(2):
+            item = pygame.sprite.Sprite()
+            item.image = self.energy_item_image
             item.rect = item.image.get_rect(topleft=(i * 400, 300))
+            self.energy_items.append(item)
     def run(self):
         while self.running:
             self.clock.tick(FPS)
@@ -31,15 +38,16 @@ class Game:
             self.update()
             self.draw()
 
+    # В классе Game
     def events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_h:  # Нажатие клавиши 'h' для использования предмета здоровья
-                    self.player.use_item("health_potion")
+                    self.player.inventory.use_item("health_potion", self.player)
                 elif event.key == pygame.K_e:  # Нажатие клавиши 'e' для использования предмета энергии
-                    self.player.use_item("energy_potion")
+                    self.player.inventory.use_item("energy_potion", self.player)
                 elif event.key == pygame.K_f:  # Нажатие клавиши 'f' для подбора предметов
                     self.check_item_pickup()
 
@@ -47,12 +55,14 @@ class Game:
         # Проверка столкновений с предметами здоровья
         for item in self.health_items[:]:  # Создаем копию списка, чтобы избежать ошибок во время итерации
             if self.player.rect.colliderect(item.rect):
-                self.player.inventory.pickup_item("health_potion", lambda: self.health_items.remove(item))
+                self.player.inventory.pickup_item("health_potion")
+                self.health_items.remove(item)  # Удаляем предмет из списка после подбора
 
         # Проверка столкновений с предметами энергии
         for item in self.energy_items[:]:  # Аналогично создаем копию списка
             if self.player.rect.colliderect(item.rect):
-                self.player.inventory.pickup_item("energy_potion", lambda: self.energy_items.remove(item))
+                self.player.inventory.pickup_item("energy_potion")
+                self.energy_items.remove(item)  # Удаляем предмет из списка после подбора
     def update(self):
         keys = pygame.key.get_pressed()
         self.player.update(keys)

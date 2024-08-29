@@ -33,10 +33,9 @@ class Inventory:
             print(f"No {item_name} left in inventory!")
             return False
 
-    def pickup_item(self, item_name, callback=None):
+    def pickup_item(self, item_name):
         self.add_item(item_name)
-        if callback:
-            callback()
+
 
 
     def get_items(self):
