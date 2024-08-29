@@ -3,6 +3,10 @@ import pygame
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, PLAYER_SPEED
 from inventory import Inventory  # Импорт класса Inventory
 
+
+def load_and_scale_image(path, size):
+    image = pygame.image.load(path).convert_alpha()
+    return pygame.transform.scale(image, size)
 class Player(pygame.sprite.Sprite):
     MAX_HEALTH = 100
     MAX_ENERGY = 100
@@ -15,13 +19,10 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface((50, 50))
         self.image.fill((0, 255, 0))
         self.rect = self.image.get_rect()
-        self.health = 100
-        self.energy = 100
+
         self.inventory = Inventory()
         # Инициализация инвентаря для игрока
-        def load_and_scale_image(path, size):
-            image = pygame.image.load(path).convert_alpha()
-            return pygame.transform.scale(image, size)
+
 
         frame_size = (64, 64)
 
@@ -70,8 +71,11 @@ class Player(pygame.sprite.Sprite):
     def update(self, keys):
         self.walking = False
 
+        # Переменные для движения
+        move_x, move_y = 0, 0
+
         # Проверка на атаку
-        if keys[pygame.K_SPACE]:  # Предполагая, что кнопка пробела используется для атаки
+        if keys[pygame.K_SPACE]:
             self.attacking = True
             self.current_frame = 0
 
@@ -79,15 +83,12 @@ class Player(pygame.sprite.Sprite):
         if self.attacking:
             animation_type = 'attacking'
         else:
-            move_x, move_y = 0, 0
             if keys[pygame.K_a]:
-                self.rect.x -= self.speed
+                move_x -= self.speed
                 self.direction = 'left'
-                self.walking = True
             if keys[pygame.K_d]:
-                self.rect.x += self.speed
+                move_x += self.speed
                 self.direction = 'right'
-                self.walking = True
             if keys[pygame.K_w]:
                 move_y -= self.speed
                 if not keys[pygame.K_a] and not keys[pygame.K_d]:  # Если не двигаемся по горизонтали
@@ -96,10 +97,15 @@ class Player(pygame.sprite.Sprite):
                 move_y += self.speed
                 if not keys[pygame.K_a] and not keys[pygame.K_d]:  # Если не двигаемся по горизонтали
                     self.direction = 'down'
+
             # Обновляем позицию игрока
             self.rect.x += move_x
             self.rect.y += move_y
+
+            # Установка флага ходьбы, если персонаж переместился
             self.walking = move_x != 0 or move_y != 0
+
+            # Определяем тип анимации на основе движения
             animation_type = 'walking' if self.walking else 'idle'
 
         # Получение кадров анимации
@@ -108,26 +114,17 @@ class Player(pygame.sprite.Sprite):
         now = pygame.time.get_ticks()
         if now - self.last_updated > self.frame_rate:
             self.last_updated = now
-            self.current_frame += 1
-
-            # Если текущий кадр достиг конца анимации атаки, остановим атаку
-            if self.attacking and self.current_frame >= len(animation_frames):
-                self.attacking = False
-                self.current_frame = 0  # Сброс кадра анимации на начало
-
-            # Обновляем кадр анимации
-            self.current_frame %= len(animation_frames)
+            self.current_frame = (self.current_frame + 1) % len(animation_frames)
             self.image = animation_frames[self.current_frame]
 
             # Масштабирование изображения во время атаки
             if self.attacking:
                 attack_size = (114, 76)  # Установите нужный размер для атаки
                 self.image = pygame.transform.scale(self.image, attack_size)
-                self.rect = self.image.get_rect(center=self.rect.center)
             else:
                 original_size = (64, 64)  # Установите исходный размер персонажа
                 self.image = pygame.transform.scale(self.image, original_size)
-                self.rect = self.image.get_rect(center=self.rect.center)
+            self.rect = self.image.get_rect(center=self.rect.center)
     def take_damage(self, amount):
         self.health = max(self.health - amount, 0)  # Предотвращаем отрицательное здоровье
         if self.health == 0:
