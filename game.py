@@ -1,20 +1,26 @@
 # game.py
 import pygame
+import pytmx
 from settings import *
 from player import Player
+from pytmx.util_pygame import load_pygame
 
 
 class Game:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Cyberpunk RPG Game")
+        pygame.display.set_caption("RPG Game")
         self.clock = pygame.time.Clock()
         self.player = Player()
         self.running = True
         # Загрузка иконок предметов
         self.health_item_image = pygame.image.load('assets/potion/Healthpotion.png').convert_alpha()
         self.energy_item_image = pygame.image.load('assets/titles/Tiles.png').convert_alpha()
+        # Загрузка карты
+        self.tmx_data = load_pygame('mapdev/Testmap.tmx')
+        self.map_surface = self.make_map()
+        self.map_rect = self.map_surface.get_rect()
 
         # Создание предметов для восстановления здоровья
         self.health_items = []
@@ -98,8 +104,22 @@ class Game:
             # Сдвигаем x для отображения следующего предмета
             x += item_image.get_width() + 40  # Дополнительный отступ между иконками
 
+    def make_map(self):
+        """Создает Pygame Surface для всей карты."""
+        temp_surface = pygame.Surface((self.tmx_data.width * self.tmx_data.tilewidth,
+                                       self.tmx_data.height * self.tmx_data.tileheight))
+        for layer in self.tmx_data.visible_layers:
+            if isinstance(layer, pytmx.TiledTileLayer):
+                for x, y, gid, in layer:
+                    tile = self.tmx_data.get_tile_image_by_gid(gid)
+                    if tile:
+                        temp_surface.blit(tile, (x * self.tmx_data.tilewidth, y * self.tmx_data.tileheight))
+        return temp_surface
     def draw(self):
         self.screen.fill((0, 0, 0))
+        # Отрисовка карты
+        self.screen.blit(self.map_surface, (0, 0))
+
         self.screen.blit(self.player.image, self.player.rect)
         self.draw_inventory()  # Вызов метода отрисовки инвентаря
         # Отображение предметов здоровья
