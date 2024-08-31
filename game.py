@@ -3,6 +3,7 @@ import pygame
 import pytmx
 from settings import *
 from player import Player
+from camera import Camera
 from pytmx.util_pygame import load_pygame
 
 
@@ -37,12 +38,17 @@ class Game:
             item.image = self.energy_item_image
             item.rect = item.image.get_rect(topleft=(i * 400, 300))
             self.energy_items.append(item)
+        self.camera = Camera(self.tmx_data.width * self.tmx_data.tilewidth, self.tmx_data.height * self.tmx_data.tileheight)
+
+    def camera_update(self, target):
+        self.camera.update(target)
     def run(self):
         while self.running:
             self.clock.tick(FPS)
             self.events()
             self.update()
             self.draw()
+            self.camera_update(self.player)  # Обновляем камеру с учетом положения игрока
 
     # В классе Game
     def events(self):
@@ -72,7 +78,7 @@ class Game:
     def update(self):
         keys = pygame.key.get_pressed()
         self.player.update(keys)
-
+        self.camera.update(self.player)   # Обновляем камеру с учетом положения игрока
 
     def draw_health_bar(self, current, max, pos, color):
         # Рисуем полосу здоровья на экране
@@ -115,22 +121,18 @@ class Game:
                     if tile:
                         temp_surface.blit(tile, (x * self.tmx_data.tilewidth, y * self.tmx_data.tileheight))
         return temp_surface
+
+
+
     def draw(self):
         self.screen.fill((0, 0, 0))
-        # Отрисовка карты
-        self.screen.blit(self.map_surface, (0, 0))
-
-        self.screen.blit(self.player.image, self.player.rect)
-        self.draw_inventory()  # Вызов метода отрисовки инвентаря
-        # Отображение предметов здоровья
+        self.screen.blit(self.map_surface, self.camera.apply_rect(self.map_rect))  # Используем метод apply_rect
+        self.screen.blit(self.player.image, self.camera.apply(self.player))
         for item in self.health_items:
-            self.screen.blit(item.image, item.rect.topleft)
-
-        # Отображение предметов энергии
+            self.screen.blit(item.image, self.camera.apply(item))
         for item in self.energy_items:
-            self.screen.blit(item.image, item.rect.topleft)
-
-        # Отображение полос здоровья и энергии
+            self.screen.blit(item.image, self.camera.apply(item))
+        self.draw_inventory()
         self.draw_health_bar(self.player.health, self.player.MAX_HEALTH, (20, 20), (255, 0, 0))
         self.draw_health_bar(self.player.energy, self.player.MAX_ENERGY, (20, 40), (0, 0, 255))
         pygame.display.flip()
