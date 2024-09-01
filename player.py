@@ -11,8 +11,9 @@ class Player(pygame.sprite.Sprite):
     MAX_HEALTH = 100
     MAX_ENERGY = 100
 
-    def __init__(self):
+    def __init__(self,pos):
         super().__init__()
+        self.position = pygame.math.Vector2(pos)
         self.speed = PLAYER_SPEED
         self.direction = 'down'  # Начальное направление
         self.walking = False  # Состояние движения
@@ -75,13 +76,17 @@ class Player(pygame.sprite.Sprite):
         move_x, move_y = 0, 0
 
         # Проверка на атаку
-        if keys[pygame.K_SPACE]:
+        if keys[pygame.K_SPACE] and not self.attacking:
             self.attacking = True
             self.current_frame = 0
+
 
         # Определение типа анимации
         if self.attacking:
             animation_type = 'attacking'
+            # Устанавливаем продолжительность анимации атаки, например, равной длине списка кадров анимации
+            if self.current_frame == len(self.animations[animation_type][self.direction]) - 1:
+                self.attacking = False  # Завершаем анимацию атаки
         else:
             if keys[pygame.K_a]:
                 move_x -= self.speed
@@ -101,6 +106,7 @@ class Player(pygame.sprite.Sprite):
             # Обновляем позицию игрока
             self.rect.x += move_x
             self.rect.y += move_y
+            self.position = pygame.math.Vector2(self.rect.center)  # Обновляем вектор позиции игрока
 
             # Установка флага ходьбы, если персонаж переместился
             self.walking = move_x != 0 or move_y != 0
@@ -117,14 +123,18 @@ class Player(pygame.sprite.Sprite):
             self.current_frame = (self.current_frame + 1) % len(animation_frames)
             self.image = animation_frames[self.current_frame]
 
-            # Масштабирование изображения во время атаки
-            if self.attacking:
-                attack_size = (114, 76)  # Установите нужный размер для атаки
-                self.image = pygame.transform.scale(self.image, attack_size)
-            else:
+            # Если анимация атаки закончилась, вернуть размер изображения к исходному
+            if not self.attacking:
                 original_size = (64, 64)  # Установите исходный размер персонажа
                 self.image = pygame.transform.scale(self.image, original_size)
-            self.rect = self.image.get_rect(center=self.rect.center)
+                self.rect = self.image.get_rect(center=self.rect.center)
+            else:
+                # Масштабирование изображения во время атаки
+                attack_size = (114, 76)  # Установите нужный размер для анимации атаки
+                self.image = pygame.transform.scale(self.image, attack_size)
+                self.rect = self.image.get_rect(center=self.rect.center)
+
+
     def take_damage(self, amount):
         self.health = max(self.health - amount, 0)  # Предотвращаем отрицательное здоровье
         if self.health == 0:

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="38">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="32" tileheight="32" infinite="0" nextlayerid="7" nextobjectid="45">
  <tileset firstgid="1" source="TX Tileset Grass.tsx"/>
  <tileset firstgid="65" source="TX Props.tsx"/>
  <layer id="2" name="Слой тайлов 2" width="100" height="100" visible="0">
@@ -210,33 +210,11 @@
 25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28,25,26,27,28
 </data>
  </layer>
- <objectgroup id="5" name="Слой объектов 1">
-  <object id="11" gid="84" x="380" y="252" width="32" height="32"/>
-  <object id="12" gid="84" x="450" y="256" width="32" height="32"/>
-  <object id="13" gid="84" x="523" y="253" width="32" height="32"/>
-  <object id="14" gid="84" x="417" y="167" width="32" height="32"/>
-  <object id="15" gid="84" x="323" y="166" width="32" height="32"/>
-  <object id="16" gid="84" x="299" y="322" width="32" height="32"/>
-  <object id="17" gid="84" x="447" y="454" width="32" height="32"/>
-  <object id="18" gid="84" x="733" y="380" width="32" height="32"/>
-  <object id="19" gid="84" x="697" y="262" width="32" height="32"/>
-  <object id="20" gid="84" x="636" y="203" width="32" height="32"/>
-  <object id="21" gid="84" x="632" y="176" width="32" height="32"/>
-  <object id="22" gid="84" x="632" y="384" width="32" height="32"/>
-  <object id="23" gid="84" x="619" y="468" width="32" height="32"/>
-  <object id="24" gid="84" x="564" y="526" width="32" height="32"/>
-  <object id="25" gid="84" x="529" y="341" width="32" height="32"/>
-  <object id="26" gid="84" x="429" y="361" width="32" height="32"/>
-  <object id="27" gid="84" x="398" y="392" width="32" height="32"/>
-  <object id="28" gid="84" x="375" y="557" width="32" height="32"/>
-  <object id="29" gid="84" x="414" y="611" width="32" height="32"/>
-  <object id="30" gid="84" x="581" y="588" width="32" height="32"/>
-  <object id="31" gid="84" x="503" y="518" width="32" height="32"/>
-  <object id="32" gid="84" x="470" y="513" width="32" height="32"/>
-  <object id="33" gid="84" x="302" y="483" width="32" height="32"/>
-  <object id="34" gid="84" x="265" y="562" width="32" height="32"/>
-  <object id="35" gid="84" x="420" y="694" width="32" height="32"/>
-  <object id="36" gid="84" x="590" y="735" width="32" height="32"/>
-  <object id="37" gid="84" x="696" y="686" width="32" height="32"/>
+ <objectgroup id="6" name="enemyss">
+  <object id="41" x="649" y="344" width="36" height="33">
+   <properties>
+    <property name="typesd" value="enemy"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>
