@@ -10,6 +10,8 @@ def load_and_scale_image(path, size):
 class Player(pygame.sprite.Sprite):
     MAX_HEALTH = 100
     MAX_ENERGY = 100
+    ATTACK_POWER = 10  # Пример значения урона от атаки
+    ATTACK_RANGE = 50  # Пример диапазона атаки
 
     def __init__(self,pos):
         super().__init__()
@@ -67,9 +69,11 @@ class Player(pygame.sprite.Sprite):
         # Инициализация здоровья и энергии
         self.health = self.MAX_HEALTH
         self.energy = self.MAX_ENERGY
+        self.attack_power = self.ATTACK_POWER
+        self.attack_range = self.ATTACK_RANGE
         self.attacking = False  # Новое состояние для атаки
 
-    def update(self, keys):
+    def update(self, keys,enemies):
         self.walking = False
 
         # Переменные для движения
@@ -80,13 +84,16 @@ class Player(pygame.sprite.Sprite):
             self.attacking = True
             self.current_frame = 0
 
-
-        # Определение типа анимации
+        # В методе update
         if self.attacking:
             animation_type = 'attacking'
-            # Устанавливаем продолжительность анимации атаки, например, равной длине списка кадров анимации
             if self.current_frame == len(self.animations[animation_type][self.direction]) - 1:
                 self.attacking = False  # Завершаем анимацию атаки
+            elif self.current_frame == 7:  # Убедитесь, что это правильный кадр для удара
+                for enemy in enemies:  # Предполагается, что у вас есть список врагов
+                    if self.position.distance_to(enemy.position) <= self.attack_range:
+                        enemy.take_damage(self.attack_power,self)
+
         else:
             if keys[pygame.K_a]:
                 move_x -= self.speed
@@ -169,3 +176,17 @@ class Player(pygame.sprite.Sprite):
 
     def get_items(self):
         return self.inventory
+
+    def attack(self, enemies):
+        # Запускаем анимацию атаки
+        self.walking = False  # Останавливаем анимацию ходьбы
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.frame_rate:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.animations['attacking'][self.direction])
+            self.image = self.animations['attacking'][self.direction][self.current_frame]
+            if self.current_frame == 0:  # Перезапускаем анимацию с начала
+                # Здесь можно вызвать метод нанесения урона, если хотите синхронизировать с определенным кадром
+                for enemy in enemies:
+                    if self.position.distance_to(enemy.position) <= self.attack_range:
+                        enemy.take_damage(self.attack_power,self)

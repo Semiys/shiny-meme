@@ -80,7 +80,7 @@ class Game:
                 self.energy_items.remove(item)  # Удаляем предмет из списка после подбора
     def update(self):
         keys = pygame.key.get_pressed()
-        self.player.update(keys)
+        self.player.update(keys,self.enemies)
         self.enemies.update()
         self.camera.update(self.player)   # Обновляем камеру с учетом положения игрока
 
