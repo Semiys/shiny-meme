@@ -41,17 +41,14 @@ class Enemy(pygame.sprite.Sprite):
             self.current_patrol_point = (self.current_patrol_point + 1) % len(self.patrol_points)
 
     def chase(self):
-        self.move_towards(self.player.position)
+        self.move_towards(self.player.position, stop_distance=50)  # stop_distance можно настроить
 
-    def move_towards(self, target):
+    def move_towards(self, target, stop_distance=0):
         direction = target - self.position
-        if direction.length() > 0:
+        if direction.length() > stop_distance:  # Останавливаемся на расстоянии stop_distance от цели
             direction = direction.normalize()
             self.velocity = direction * self.speed
         else:
             self.velocity = pygame.math.Vector2(0, 0)
-
-        self.position += self.velocity  # Обновляем вектор позиции
-
-        # После обновления позиции, убедимся, что rect также обновляется.
+        self.position += self.velocity
         self.rect.center = self.position

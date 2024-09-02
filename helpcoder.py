@@ -1,4 +1,4 @@
-input_file = 'game.py'  # Входной файл с комментариями
+input_file = 'enemy.py'  # Входной файл с комментариями
 output_file = 'helpcoder242.py'  # Выходной файл без комментариев
 
 with open(input_file, 'r', encoding='utf-8') as infile, open(output_file, 'w', encoding='utf-8') as outfile:
